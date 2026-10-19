@@ -1,0 +1,2 @@
+This is an inert synthetic YARA fixture, not malware.
+SYNTHETIC_LINUX_LAB_MARKER_5A7B

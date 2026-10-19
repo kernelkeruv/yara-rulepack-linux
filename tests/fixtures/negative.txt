@@ -1,0 +1,2 @@
+This is an inert synthetic YARA negative control.
+There is no trigger marker in this file.

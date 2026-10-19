@@ -3,13 +3,25 @@ on:
   push:
   pull_request:
 jobs:
-  smoke:
+  synthetic-yara-fixtures:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: repository structure
+      - name: Verify repository structure
         run: |
+          set -Eeuo pipefail
           test -f README.md
           test -f LICENSE
           test -f SECURITY.md
-          test -d src
+          test -f rules/synthetic_marker.yar
+          test -f tests/fixtures/positive.txt
+          test -f tests/fixtures/negative.txt
+          test -f tests/run_rules.sh
+      - name: Install YARA
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y yara
+      - name: Compile rule and assert synthetic matches
+        env:
+          WORK_DIR: ${{ runner.temp }}
+        run: bash tests/run_rules.sh

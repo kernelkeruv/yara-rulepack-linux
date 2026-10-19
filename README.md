@@ -1,26 +1,32 @@
-# Linux YARA Rulepack | Planned detection lab
+# Linux YARA Rulepack | Synthetic defensive detection lab
 
-**Status (October 2026): repository scaffold. No YARA rules, test fixtures, or functional validation harness were found on the default branch in this review.**
+**Current implementation:** an inert YARA rule, two text fixtures and a small Bash verification harness. The rule proves a content-matching workflow; it does not detect real malware.
 
-## Purpose
+## Why this matters for security operations
 
-An eventual collection of defensive YARA rules to identify known, synthetic Linux malware-like file patterns in an **authorized** test directory. YARA is a content-matching engine, not an antivirus verdict or proof of compromise.
+Detection engineering requires a falsifiable rule: define what should match, what must *not* match, run tests, inspect false positives and retain versioned evidence of the result. YARA rules are content indicators and must not be treated as security verdicts.
 
-## Planned reproducible lab
+## Repository files
 
-1. Commit a small, plainly labeled synthetic test fixture with an inert string, not actual malware.
-2. Add one tightly scoped `.yar` rule and document its metadata, strings, and rationale.
-3. Verify `yara --version` and `yarac` compilation in a disposable Linux environment.
-4. Add a positive fixture (expected match), negative fixture (expected nonmatch), and automated checks that fail when either result deviates.
-5. Explain expected false positives, applicability, performance limits, known blind spots and rule update policy.
-6. Restrict all scans to explicitly approved fixtures; never publish user evidence, logs, credentials or data feeds.
+- [Synthetic marker rule](rules/synthetic_marker.yar): looks for a distinctive harmless ASCII marker.
+- [Positive fixture](tests/fixtures/positive.txt): contains the marker.
+- [Negative fixture](tests/fixtures/negative.txt): does not contain the marker.
+- [Test runner](tests/run_rules.sh): compiles the rule and checks both outcomes, writing logs and hashes to a user-selected working directory.
 
-## Acceptance checks
+## Reproduce in a disposable Linux VM
 
-- [ ] One committed valid rule with comments and versioned rationale
-- [ ] Matching and nonmatching synthetic fixtures
-- [ ] `yarac` syntax check and CI assertions with nonzero failure on errors
-- [ ] README showing **actual sanitized output captured from a test run**
-- [ ] Reproducible environment and dependency versions
+Install trusted YARA tooling appropriate to your distribution, verify `yara --version` and `yarac --version`, and set `WORK_DIR` to an existing writable directory. Work on this repository checkout, not personal or production files.
 
-The presence of generic workflow files does not prove rules or CI detection coverage. Until implemented, describe this repository as a planned lab, not a curated validated detection pack.
+```bash
+set -Eeuo pipefail
+: "${WORK_DIR:?Export WORK_DIR first}"
+bash tests/run_rules.sh
+```
+
+**Expected (not a claimed run result):** `PASS: positive fixture matched and negative fixture did not.` The script retains a unique directory named `yara-synthetic.*` under `WORK_DIR`, with compilation output, positive/negative match results and SHA-256 hashes. It exits nonzero for a missing binary, malformed rule, missing positive detection or unexpected negative detection.
+
+## Boundaries and next steps
+
+This initial demonstration has not been executed in a YARA-enabled CI environment as part of the portfolio review. Next add pinned CI validation and real defensive rules only with documented source, license, test coverage, performance and false-positive analysis. Do not commit live malware, user records, production logs, authentication secrets or source evidence.
+
+Status: **minimal proof of concept**, not a curated validated Linux detection pack.
